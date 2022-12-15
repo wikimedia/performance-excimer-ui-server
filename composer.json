@@ -25,6 +25,10 @@
 		}
 	},
 	"scripts": {
+		"serve": [
+			"Composer\\Config::disableProcessTimeout",
+			"EXCIMER_CONFIG_PATH=../config/config.dev.json php -S 0.0.0.0:4000 -t public_html/"
+		],
 		"test": [
 			"parallel-lint . --exclude vendor",
 			"@phpcs",

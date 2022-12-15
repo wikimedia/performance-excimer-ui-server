@@ -1,4 +1,4 @@
-/vendor/
+# Development
 /.idea
 *.kate-swp
 *~
@@ -6,9 +6,15 @@
 .#*
 .*.swp
 .project
-cscope.files
-cscope.out
 *.orig
 sublime-*
 sftp-config.json
 *.vscode/
+
+# Install
+/config/config.json
+/vendor/
+
+# Usage
+cscope.files
+cscope.out
