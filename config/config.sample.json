@@ -1,0 +1,7 @@
+{
+	"url": "http://localhost/excimer-ui/index.php",
+	"dsn": "mysql:dbname=excimer;host=localhost",
+	"dbUser": "excimer",
+	"dbPassword": "...",
+	"retentionDays": 30
+}

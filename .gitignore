@@ -1,0 +1,14 @@
+/vendor/
+/.idea
+*.kate-swp
+*~
+\#*#
+.#*
+.*.swp
+.project
+cscope.files
+cscope.out
+*.orig
+sublime-*
+sftp-config.json
+*.vscode/

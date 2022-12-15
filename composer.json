@@ -1,0 +1,41 @@
+{
+	"name": "wikimedia/excimer-ui-server",
+	"description": "Excimer UI server",
+	"license": "Apache-2.0",
+	"require": {
+		"php": ">=7.4",
+		"ext-curl": "*",
+		"ext-json": "*",
+		"ext-pdo": "*",
+		"ext-zlib":  "*",
+		"guzzlehttp/guzzle": "^7.2.0",
+		"psr/log": "~1.1.3",
+		"monolog/monolog": "^2.0.0"
+	},
+	"require-dev": {
+		"mediawiki/mediawiki-codesniffer": "38.0.0",
+		"mediawiki/mediawiki-phan-config": "0.11.1",
+		"mediawiki/minus-x": "1.1.1",
+		"php-parallel-lint/php-console-highlighter": "0.5.0",
+		"php-parallel-lint/php-parallel-lint": "1.3.1"
+	},
+	"autoload": {
+		"psr-4": {
+			"Wikimedia\\ExcimerUI\\Server\\": "src/"
+		}
+	},
+	"scripts": {
+		"test": [
+			"parallel-lint . --exclude vendor",
+			"@phpcs",
+			"@phan",
+			"minus-x check ."
+		],
+		"phan": "phan --allow-polyfill-parser",
+		"fix": [
+			"minus-x fix .",
+			"phpcbf"
+		],
+		"phpcs": "phpcs -sp src public_html"
+	}
+}
