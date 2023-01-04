@@ -112,7 +112,7 @@ class Server {
 		if ( $configPath === null ) {
 			$configPath = $_ENV['EXCIMER_CONFIG_PATH'] ?? '';
 			if ( $configPath === '' ) {
-				$configPath = __DIR__ . '/../excimer-config.json';
+				$configPath = __DIR__ . '/../config/config.json';
 			}
 		}
 		$json = file_get_contents( $configPath );
