@@ -110,7 +110,7 @@ class Server {
 	 */
 	private function setupConfig( $configPath ) {
 		if ( $configPath === null ) {
-			$configPath = $_ENV['EXCIMER_CONFIG_PATH'] ?? '';
+			$configPath = getenv( 'EXCIMER_CONFIG_PATH' ) ?: '';
 			if ( $configPath === '' ) {
 				$configPath = __DIR__ . '/../config/config.json';
 			}
