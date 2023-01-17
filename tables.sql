@@ -5,7 +5,7 @@ CREATE TABLE excimer_report (
     request_info LONGBLOB NOT NULL,
     speedscope_deflated LONGBLOB NOT NULL,
     period_us INT NOT NULL,
-    created TIMESTAMP NOT NULL,
+    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(),
 
     PRIMARY KEY (report_id),
     KEY (request_id),
