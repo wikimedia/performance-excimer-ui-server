@@ -25,7 +25,9 @@ class Server {
 		'jsonLogFile' => '',
 		'logToStderr' => false,
 		'jsonLogToStderr' => false,
-		'logToSyslog' => false
+		'logToSyslog' => false,
+		'hashKey' => null,
+		'profileIdLength' => 16,
 	];
 
 	/** @var array */
@@ -268,6 +270,22 @@ HTML;
 	}
 
 	/**
+	 * Hash the request ID to generate a profile ID, in an identical manner to the client
+	 *
+	 * @param string $id
+	 * @return string
+	 */
+	private function hash( $id ) {
+		$key = $this->getConfig( 'hashKey' );
+		if ( $key !== null ) {
+			$hash = hash_hmac( 'sha512', $id, $key );
+		} else {
+			$hash = hash( 'sha512', $id );
+		}
+		return substr( $hash, 0, (int)$this->getConfig( 'profileIdLength' ) );
+	}
+
+	/**
 	 * Handle the ingest action. Take data supplied as POST parameters and
 	 * write it to the database. Purge expired database rows.
 	 *
@@ -288,8 +306,19 @@ HTML;
 		$id = rawurldecode( $pathParts[0] );
 		$name = $this->getPostParam( 'name' );
 		$requestInfo = $this->getPostParam( 'request' );
+		$requestId = $this->getPostParam( 'requestId' );
 		$period = (float)$this->getPostParam( 'period' );
 		$speedscope_deflated = $this->getPostParam( 'speedscope_deflated' );
+
+		$expectedLength = (int)$this->getConfig( 'profileIdLength' );
+		if ( strlen( $id ) !== $expectedLength ) {
+			throw new ServerError( "Profile ID must have length $expectedLength", 400 );
+		}
+		if ( !hash_equals( $this->hash( $requestId ), $id ) ) {
+			throw new ServerError(
+				"Request ID and profile ID do not match, is hashKey configured incorrectly?",
+				400 );
+		}
 
 		$db = $this->getDB();
 		$st = $db->prepare(
