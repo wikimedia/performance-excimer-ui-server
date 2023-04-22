@@ -3,7 +3,7 @@
 	"description": "Excimer UI server",
 	"license": "Apache-2.0",
 	"require": {
-		"php": ">=7.4",
+		"php": ">=7.3",
 		"ext-curl": "*",
 		"ext-json": "*",
 		"ext-pdo": "*",
@@ -22,6 +22,11 @@
 	"autoload": {
 		"psr-4": {
 			"Wikimedia\\ExcimerUI\\Server\\": "src/"
+		}
+	},
+	"config": {
+		"platform": {
+			"php": "7.3.31"
 		}
 	},
 	"scripts": {
