@@ -1,0 +1,4 @@
+.* export-ignore
+/config/ export-ignore
+/composer.json export-ignore
+/install_dev.sql export-ignore
