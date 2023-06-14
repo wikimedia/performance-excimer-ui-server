@@ -4,14 +4,7 @@ namespace Wikimedia\ExcimerUI\Server;
 
 use GuzzleHttp\Psr7\ServerRequest;
 use GuzzleHttp\Psr7\Uri;
-use Monolog\Formatter\JsonFormatter;
-use Monolog\Formatter\LineFormatter;
-use Monolog\Handler\StreamHandler;
-use Monolog\Handler\SyslogHandler;
-use Monolog\Logger;
-use Monolog\Processor\PsrLogMessageProcessor;
 use PDO;
-use Psr\Log\LoggerInterface;
 use Throwable;
 
 class Server {
@@ -20,21 +13,16 @@ class Server {
 		'url' => null,
 		'asyncIngest' => true,
 		'retentionDays' => 0,
-		'logFormat' => "[%datetime%] %channel%.%level_name%: %message% %context% %extra%\n",
 		'logFile' => '',
-		'jsonLogFile' => '',
 		'logToStderr' => false,
-		'jsonLogToStderr' => false,
 		'logToSyslog' => false,
+		'logToSyslogCee' => false,
 		'hashKey' => null,
 		'profileIdLength' => 16,
 	];
 
 	/** @var array */
 	private $config;
-
-	/** @var LoggerInterface */
-	private $logger;
 
 	/** @var ServerRequest */
 	private $request;
@@ -68,7 +56,6 @@ class Server {
 	 */
 	private function guardedExecute( $configPath ) {
 		$this->setupConfig( $configPath );
-		$this->setupLogger();
 		$this->request = ServerRequest::fromGlobals();
 
 		$urlPath = $this->request->getUri()->getPath();
@@ -150,8 +137,16 @@ class Server {
 	 * @param Throwable $exception
 	 */
 	private function handleException( $exception ) {
-		if ( $this->logger ) {
-			$this->logger->error(
+		if ( is_int( $exception->getCode() )
+			&& $exception->getCode() >= 300 && $exception->getCode() < 600
+		) {
+			$code = $exception->getCode();
+		} else {
+			$code = 500;
+		}
+
+		if ( !$exception instanceof ServerError || $code === 500 ) {
+			$this->log( LOG_ERR,
 				"Exception of class " . get_class( $exception ) . ': ' .
 				$exception->getMessage(),
 				[
@@ -162,14 +157,6 @@ class Server {
 
 		if ( headers_sent() ) {
 			return;
-		}
-
-		if ( is_int( $exception->getCode() )
-			&& $exception->getCode() >= 300 && $exception->getCode() < 600
-		) {
-			$code = $exception->getCode();
-		} else {
-			$code = 500;
 		}
 		http_response_code( $code );
 		header( 'Content-Type: text/html; charset=utf-8' );
@@ -193,37 +180,46 @@ HTML;
 	}
 
 	/**
-	 * Set up logging based on current configuration.
+	 * @param int $level
+	 * @param string $message
+	 * @param array $extra
 	 */
-	private function setupLogger() {
-		$this->logger = new Logger( 'excimer' );
-		$this->logger->pushProcessor( new PsrLogMessageProcessor );
-		$formatter = new LineFormatter( $this->getConfig( 'logFormat' ) );
-		$jsonFormatter = new JsonFormatter( JsonFormatter::BATCH_MODE_NEWLINES );
+	private function log( int $level, string $message, array $extra = [] ) {
+		static $levelStrings = [
+			LOG_ERR => 'ERROR',
+			LOG_WARNING => 'WARNING',
+		];
+		$levelStr = $levelStrings[$level] ?? 'DEBUG';
+		$lineMessage = sprintf( '[%s] %s: %s %s',
+			date( 'Y-m-d\TH:i:sP' ),
+			$levelStr,
+			$message,
+			json_encode( $extra, JSON_UNESCAPED_SLASHES )
+		);
+		$ceeLogstashMessage = '@cee: ' . json_encode( [
+			'message' => $message,
+			'http' => [
+				'request' => [
+					'method' => $_SERVER['REQUEST_METHOD'] ?? '',
+				],
+			],
+			'labels' => $extra + [
+				'phpversion' => PHP_VERSION,
+			],
+			'service' => [
+				'type' => 'excimer',
+			],
+		], JSON_UNESCAPED_SLASHES );
 
 		if ( strlen( $this->getConfig( 'logFile' ) ) ) {
-			$handler = new StreamHandler( $this->getConfig( 'logFile' ) );
-			$handler->setFormatter( $formatter );
-			$this->logger->pushHandler( $handler );
+			file_put_contents( $this->getConfig( 'logFile' ), "$lineMessage\n", FILE_APPEND );
 		}
-		if ( strlen( $this->getConfig( 'jsonLogFile' ) ) ) {
-			$handler = new StreamHandler( $this->getConfig( 'jsonLogFile' ) );
-			$handler->setFormatter( $jsonFormatter );
-			$this->logger->pushHandler( $handler );
-		}
-		if ( $this->getConfig( 'logToStderr' ) ) {
-			$handler = new StreamHandler( 'php://stderr' );
-			$handler->setFormatter( $formatter );
-			$this->logger->pushHandler( $handler );
-		}
-		if ( $this->getConfig( 'jsonLogToStderr' ) ) {
-			$handler = new StreamHandler( 'php://stderr' );
-			$handler->setFormatter( $jsonFormatter );
-			$this->logger->pushHandler( $handler );
-		}
+		openlog( 'excimer', LOG_ODELAY, LOG_USER );
 		if ( $this->getConfig( 'logToSyslog' ) ) {
-			$this->logger->pushHandler(
-				new SyslogHandler( $this->getConfig( 'syslogIdent' ) ) );
+			syslog( $level, $lineMessage );
+		}
+		if ( $this->getConfig( 'logToSyslogCee' ) ) {
+			syslog( $level, $ceeLogstashMessage );
 		}
 	}
 

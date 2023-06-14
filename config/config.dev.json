@@ -3,5 +3,7 @@
 	"dsn": "mysql:dbname=excimer;host=localhost",
 	"dbUser": "excimer",
 	"dbPassword": "devpassword",
+	"logFile": "/tmp/excimer.log",
+	"logToSyslogCee": true,
 	"retentionDays": 30
 }
