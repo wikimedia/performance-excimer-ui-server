@@ -7,8 +7,7 @@
 		"ext-curl": "*",
 		"ext-json": "*",
 		"ext-pdo": "*",
-		"ext-zlib":  "*",
-		"guzzlehttp/psr7": "^2.5.0"
+		"ext-zlib":  "*"
 	},
 	"require-dev": {
 		"mediawiki/mediawiki-codesniffer": "38.0.0",

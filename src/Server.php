@@ -2,8 +2,6 @@
 
 namespace Wikimedia\ExcimerUI\Server;
 
-use GuzzleHttp\Psr7\ServerRequest;
-use GuzzleHttp\Psr7\Uri;
 use PDO;
 use Throwable;
 
@@ -24,7 +22,7 @@ class Server {
 	/** @var array */
 	private $config;
 
-	/** @var ServerRequest */
+	/** @var array{method:string,path:string,headers:array,body:array} */
 	private $request;
 
 	/**
@@ -42,6 +40,15 @@ class Server {
 	 * @param string|null $configPath
 	 */
 	private function execute( $configPath ) {
+		$this->request = [
+			'method' => $_SERVER['REQUEST_METHOD'] ?? 'GET',
+			'path' => $_SERVER['REQUEST_URI'] ?? '',
+			'headers' => [
+				'Accept-Encoding' => preg_split( '/\s*,\s*/', $_SERVER['HTTP_ACCEPT_ENCODING'] ?? '' ),
+			],
+			'body' => $_POST,
+		];
+
 		try {
 			$this->guardedExecute( $configPath );
 		} catch ( Throwable $e ) {
@@ -56,10 +63,10 @@ class Server {
 	 */
 	private function guardedExecute( $configPath ) {
 		$this->setupConfig( $configPath );
-		$this->request = ServerRequest::fromGlobals();
 
-		$urlPath = $this->request->getUri()->getPath();
-		$base = ( new Uri( $this->getConfig( 'url' ) ) )->getPath();
+		$urlPath = $this->request['path'];
+		$base = parse_url( $this->getConfig( 'url' ), PHP_URL_PATH ) ?: '';
+		'@phan-var string $base -- https://github.com/phan/phan/issues/1863';
 		if ( $base[-1] !== '/' ) {
 			$base .= '/';
 		}
@@ -253,13 +260,11 @@ HTML;
 	 * @throws ServerError
 	 */
 	private function getPostParam( $name ): string {
-		$post = $this->request->getParsedBody();
-		if ( isset( $post[$name] ) ) {
-			if ( is_string( $post[$name] ) ) {
-				return $post[$name];
-			} else {
-				throw new ServerError( "Unexpected array POST parameter \"$name\"", 400 );
-			}
+		$post = $this->request['body'][$name] ?? null;
+		if ( is_string( $post ) ) {
+			return $post;
+		} elseif ( $post !== null ) {
+			throw new ServerError( "Unexpected array POST parameter \"$name\"", 400 );
 		} else {
 			throw new ServerError( "Missing POST parameter \"$name\"", 400 );
 		}
@@ -377,9 +382,7 @@ HTML;
 		header( 'Content-Type: application/json' );
 		header( 'X-Content-Type-Options: nosniff' );
 
-		$encodings = array_map( 'trim',
-			explode( ',', $this->request->getHeaderLine( 'Accept-Encoding' ) ) );
-		if ( in_array( 'deflate', $encodings ) ) {
+		if ( in_array( 'deflate', $this->request['headers']['Accept-Encoding'] ) ) {
 			header( 'Content-Encoding: deflate' );
 			if ( $deflated ) {
 				$out = $result;
