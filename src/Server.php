@@ -154,10 +154,13 @@ class Server {
 
 		if ( !$exception instanceof ServerError || $code === 500 ) {
 			$this->log( LOG_ERR,
-				"Exception of class " . get_class( $exception ) . ': ' .
-				$exception->getMessage(),
+				"Exception of class " . get_class( $exception ) . ': ' . $exception->getMessage(),
 				[
-					'trace' => $exception->getTraceAsString()
+					'error' => [
+						'type' => get_class( $exception ),
+						'message' => $exception->getMessage(),
+						'stack_trace' => $exception->getTraceAsString(),
+					]
 				]
 			);
 		}
@@ -204,19 +207,21 @@ HTML;
 			json_encode( $extra, JSON_UNESCAPED_SLASHES )
 		);
 		$ceeLogstashMessage = '@cee: ' . json_encode( [
+			// https://doc.wikimedia.org/ecs/
+			'ecs.version' => '1.11.0',
 			'message' => $message,
 			'http' => [
 				'request' => [
 					'method' => $_SERVER['REQUEST_METHOD'] ?? '',
 				],
 			],
-			'labels' => $extra + [
+			'labels' => [
 				'phpversion' => PHP_VERSION,
-			],
+			] + ( $extra['labels'] ?? [] ),
 			'service' => [
 				'type' => 'excimer',
 			],
-		], JSON_UNESCAPED_SLASHES );
+		] + $extra, JSON_UNESCAPED_SLASHES );
 
 		if ( strlen( $this->getConfig( 'logFile' ) ) ) {
 			file_put_contents( $this->getConfig( 'logFile' ), "$lineMessage\n", FILE_APPEND );
