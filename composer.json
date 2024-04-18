@@ -3,7 +3,7 @@
 	"description": "Excimer UI server",
 	"license": "Apache-2.0",
 	"require": {
-		"php": ">=7.3",
+		"php": ">=7.4",
 		"ext-curl": "*",
 		"ext-json": "*",
 		"ext-pdo": "*",
@@ -23,7 +23,7 @@
 	},
 	"config": {
 		"platform": {
-			"php": "7.3.31"
+			"php": "7.4.33"
 		}
 	},
 	"scripts": {
