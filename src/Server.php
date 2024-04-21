@@ -399,7 +399,6 @@ HTML;
 		} else {
 			$out = $result;
 		}
-		// @phan-suppress-next-line SecurityCheck-XSS -- it's not HTML...
 		echo $out;
 	}
 
