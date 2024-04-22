@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ruleset>
-	<rule ref="./vendor/mediawiki/mediawiki-codesniffer/MediaWiki" />
-	<rule ref="MediaWiki.Usage.SuperGlobalsUsage.SuperGlobals">
-		<severity>0</severity>
-	</rule>
-	<rule ref="MediaWiki.ControlStructures.AssignmentInControlStructures">
-		<severity>0</severity>
+	<rule ref="./vendor/mediawiki/mediawiki-codesniffer/MediaWiki">
+		<exclude name="MediaWiki.ControlStructures.AssignmentInControlStructures.AssignmentInControlStructures" />
+		<exclude name="MediaWiki.Usage.SuperGlobalsUsage.SuperGlobals" />
 	</rule>
 </ruleset>
