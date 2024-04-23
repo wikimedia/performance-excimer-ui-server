@@ -46,6 +46,7 @@ class Server {
 			'headers' => [
 				'Accept-Encoding' => preg_split( '/\s*,\s*/', $_SERVER['HTTP_ACCEPT_ENCODING'] ?? '' ),
 			],
+			// phpcs:ignore MediaWiki.Usage.SuperGlobalsUsage
 			'body' => $_POST,
 		];
 
