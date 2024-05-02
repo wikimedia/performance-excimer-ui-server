@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <ruleset>
 	<rule ref="./vendor/mediawiki/mediawiki-codesniffer/MediaWiki">
-		<exclude name="MediaWiki.ControlStructures.AssignmentInControlStructures" />
+		<exclude name="Generic.CodeAnalysis.AssignmentInCondition.FoundInWhileCondition" />
 	</rule>
 	<file>.</file>
 	<arg name="extensions" value="php" />
