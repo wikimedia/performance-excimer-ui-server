@@ -327,6 +327,9 @@ HTML;
 				400 );
 		}
 
+		// Ensure the profile name fits the DB column (T377433)
+		$name = mb_strcut( $name, 0, 255 );
+
 		$db = $this->getDB();
 		$st = $db->prepare(
 			'INSERT INTO excimer_report ' .
