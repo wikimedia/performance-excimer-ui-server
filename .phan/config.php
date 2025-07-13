@@ -7,5 +7,6 @@ $cfg['directory_list'] = [
 	'vendor',
 ];
 $cfg['exclude_analysis_directory_list'][] = 'vendor';
+$cfg['exception_classes_with_optional_throws_phpdoc'][] = \Wikimedia\ExcimerUI\Server\ServerError::class;
 
 return $cfg;
