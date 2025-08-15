@@ -3,7 +3,7 @@
 	"description": "Excimer UI server",
 	"license": "Apache-2.0",
 	"require": {
-		"php": ">=7.4",
+		"php": ">=8.1",
 		"ext-curl": "*",
 		"ext-json": "*",
 		"ext-mbstring": "*",
@@ -23,9 +23,6 @@
 		}
 	},
 	"config": {
-		"platform": {
-			"php": "7.4.33"
-		},
 		"allow-plugins": {
 			"dealerdirect/phpcodesniffer-composer-installer": true
 		}
